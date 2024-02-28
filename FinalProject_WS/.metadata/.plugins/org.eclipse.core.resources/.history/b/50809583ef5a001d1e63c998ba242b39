@@ -1,0 +1,36 @@
+/*
+ * HMI_func.c
+ *
+ *  Created on: Nov 2, 2022
+ *      Author: dell
+ */
+
+#include "HMI_func.h"
+
+void take_pass(uint8 pass[]){
+	uint8 i=0;
+	uint8 key = KEYPAD_getPressedKey();
+	while(key != '='){
+		if(key>=0 && key <= 9){
+			if(i<5){
+				pass[i] = key ;
+				LCD_displayCharacter('*');
+				i++;
+			}
+		}
+		key = KEYPAD_getPressedKey();
+		_delay_ms(500);
+	}
+}
+
+
+void send_password(uint8 pass[]){
+	for(int i = 0; i < 5; i++){
+		UART_sendByte(pass[i]);
+		_delay_ms(50);
+	}
+}
+
+void timer_setCallBack(){
+	g_ticks++;
+}

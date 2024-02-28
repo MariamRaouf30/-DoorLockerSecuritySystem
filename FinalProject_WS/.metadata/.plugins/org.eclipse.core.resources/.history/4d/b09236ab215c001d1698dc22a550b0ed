@@ -1,0 +1,70 @@
+/*
+ * CONTROL_ECU.C
+ *
+ *  Created on: Oct 30, 2022
+ *      Author: dell
+ */
+
+#include "CONTROL_func.h"
+
+uint8 pass[5];
+
+int main(void){
+	controlECU_init();
+	uint8 receive_byte ;
+	while(1){
+		receive_byte = UART_recieveByte();
+		if (receive_byte == SEND_PASS){
+			receive_password(password);
+			while(UART_recieveByte() != AGAIN);
+			receive_password(confirmed_password);
+			compare_passwords(password,confirmed_password);
+			if(flag == 0){
+				UART_sendByte(MATCHED);
+				save_password(password);
+			}
+			if(flag == 1 ){
+				UART_sendByte(UNMATCHED);
+			}
+
+		}
+		if (receive_byte == GSEND_PASS){
+			receive_password(pass);
+			get_password();
+			compare_passwords(eeprom_password,pass);
+			if(flag == 0){
+				UART_sendByte(MATCHED);
+			}
+			if(flag == 1 ){
+				UART_sendByte(UNMATCHED);
+			}
+		}
+		if (receive_byte == OPEN){
+			open_door();
+		}
+		if (receive_byte == ALERT){
+			Alert();
+		}
+		if(receive_byte == ERROR1_CHECK){
+			uint8 v_pass[5];
+			receive_password(v_pass);
+			compare_passwords(eeprom_password,v_pass);
+			if(flag == 0){
+				UART_sendByte(MATCHED);
+			}
+			if(flag == 1 ){
+				UART_sendByte(UNMATCHED);
+			}
+		}
+		if(receive_byte == ERROR2_CHECK){
+			uint8 v_pass1[5];
+			receive_password(v_pass1);
+			compare_passwords(password,v_pass1);
+			if(flag == 0){
+				UART_sendByte(MATCHED);
+				save_password(v_pass1);
+			}
+		}
+
+	}
+}

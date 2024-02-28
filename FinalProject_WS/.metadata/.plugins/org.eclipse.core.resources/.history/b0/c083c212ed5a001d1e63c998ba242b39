@@ -1,0 +1,56 @@
+/*
+ * CONTROL_func.h
+ *
+ *  Created on: Nov 2, 2022
+ *      Author: dell
+ */
+
+#ifndef CONTROL_FUNC_H_
+#define CONTROL_FUNC_H_
+
+#include <util/delay.h>
+#include "uart.h"
+#include <avr/io.h>
+#include "timer1.h"
+#include "external_eeprom.h"
+#include "dc_motor.h"
+#include "twi.h"
+
+#define AGAIN 		0x10
+#define MATCHED 	0x01
+#define UNMATCHED   0x03
+#define ALERT 		0x02
+#define OPEN 		0x04
+#define SEND_PASS	0x05
+#define CHECK		0x06
+#define GSEND_PASS  0x07
+#define READY 		0X08
+
+#define EEPROM_ADDREESS		   	    0x00
+
+
+extern uint8 flag;
+extern uint8 g_ticks ;
+extern uint8 g_password[5];
+extern uint8 password[5];
+extern uint8 confirmed_password[5];
+extern uint8 confirm_pass;
+
+
+extern uint8 receive_byte;
+
+
+
+
+void controlECU_init();
+void receive_password(uint8 pass[5]);
+void USER_PASSWORD(void);
+void compare_passwords(uint8 pass1[],uint8 pass2[]);
+void save_password(uint8 pass[]);
+void open_door(void);
+void timer_setCallBack(void);
+
+
+
+
+#endif /* CONTROL_FUNC_H_ */

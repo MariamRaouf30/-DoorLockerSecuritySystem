@@ -1,0 +1,161 @@
+/*
+ * HMI_ECU.c
+ *
+ *  Created on: Oct 29, 2022
+ *      Author: dell
+ */
+
+#include "HMI_func.h"
+
+uint8 count_error = 0;
+
+uint8 g_password[5];
+uint8 received_byte=0;
+
+
+int main(void){
+	HMI_init();
+	state = 0;
+	while(1){
+		switch(state){
+		case start:
+			userPASSWORD();
+			if (UART_recieveByte() == MATCHED ){
+				LCD_clearScreen();
+				LCD_displayString("MATCHED");
+				_delay_ms(500);
+				state = Main_menu;
+			}
+			else if (UART_recieveByte() == UNMATCHED ){
+				LCD_clearScreen();
+				LCD_displayString("PASSWORD UNMATCHED");
+				_delay_ms(200);
+				state = start;
+			}
+			break;
+		case user_password:
+			userPASSWORD();
+			state++;
+			break;
+		case confirmation :
+			//UART_sendByte(CHECK);
+			received_byte = UART_recieveByte();
+			if (received_byte == MATCHED ){
+				LCD_clearScreen();
+				LCD_displayString("MATCHED");
+				_delay_ms(500);
+				state = Main_menu;
+			}
+			else if (received_byte == UNMATCHED ){
+				state = change_error;
+				count_error++;
+			}
+			break;
+		case Main_menu:
+			LCD_clearScreen();
+			LCD_displayString("+: open door");
+			LCD_moveCursor(1,0);
+			LCD_displayString("-: change pass");
+			uint8 key = KEYPAD_getPressedKey();
+			_delay_ms(500);
+			if (key == '+'){
+				LCD_clearScreen();
+				LCD_displayString("enter saved pass:");
+				LCD_moveCursor(1,0);
+				take_pass(g_password);
+				UART_sendByte(GSEND_PASS);
+				send_password(g_password);
+				//while(UART_recieveByte() != CHECK);
+				if (UART_recieveByte() == MATCHED ){
+					LCD_clearScreen();
+					state = open_door;
+				}
+				else if (UART_recieveByte() == UNMATCHED ){
+					state = Unlock_error;
+					count_error++;
+				}
+			}
+			else if (key == '-'){
+				state = user_password;
+			}
+			break;
+		case Unlock_error:
+			while(count_error<=3){
+				LCD_clearScreen();
+				LCD_displayString("PASSWORD UNMATCHED");
+				_delay_ms(200);
+				LCD_clearScreen();
+				LCD_displayString("plz enter pass:");
+				LCD_moveCursor(1,0);
+				take_pass(password);
+				send_password(password);
+				while(UART_recieveByte() != CHECK);
+				if (UART_recieveByte() == MATCHED ){
+					state = open_door;
+					count_error = 0;
+					break;
+				}
+					count_error++;
+				if(count_error == 3){
+					state = Alert;
+					count_error = 0;
+					break;
+				}
+			}
+			break;
+
+		case change_error:
+			while(count_error<=3){
+				LCD_clearScreen();
+				LCD_displayString("PASSWORD UNMATCHED");
+				_delay_ms(200);
+				LCD_clearScreen();
+				LCD_displayString("plz enter pass:");
+				LCD_moveCursor(1,0);
+				take_pass(password);
+				UART_sendByte(ERROR2_CHECK);
+				send_password(password);
+				if (UART_recieveByte() == MATCHED ){
+					LCD_clearScreen();
+					LCD_displayString("SAVED");
+					_delay_ms(200);
+					state = Main_menu;
+					count_error = 0;
+					break;
+				}
+				count_error++;
+				if(count_error == 3){
+					state = Alert;
+					count_error = 0;
+					break;
+				}
+			}
+			break;
+		case open_door:
+			UART_sendByte(OPEN);
+			open();
+			state = Main_menu;
+			break;
+		case Alert:
+			UART_sendByte(ALERT);
+			alert();
+			state = Main_menu;
+			break;
+		}
+
+	}
+}
+
+
+//			if (count_error == 3){
+//				count_error = 0;
+//				UART_sendByte(ALERT);
+//			}
+//			else {
+//				LCD_clearScreen();
+//				LCD_displayString("PASSWORD UNMATCHED");
+//				_delay_ms(500);
+//				state = user_password;
+//			}
+
+

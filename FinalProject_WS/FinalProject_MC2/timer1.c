@@ -1,0 +1,104 @@
+ /******************************************************************************
+ *
+ * Module: Timer1
+ *
+ * File Name: timer1.c
+ *
+ * Description: Source file for the Timer1 driver
+ *
+ * Author: Mariam Raouf
+ *
+ *******************************************************************************/
+
+#include "timer1.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include "common_macros.h"/* For GET_BIT Macro */
+
+/* Global variable to hold the address of the call back function in the application */
+static volatile void (*g_callBackPtr)(void) = NULL_PTR;
+
+/*******************************************************************************
+ *                      Functions Definitions                                  *
+ *******************************************************************************/
+
+/*-------------------------------------------------------------------------------
+ * [Function Name]: Timer1_init
+ *
+ * [Description]:  Function to initialize the Timer
+ *
+ * [Args]:        Config_Ptr: a constant pointer to struct that defines the Timer required configuration
+ *
+ * [Returns]:      Void
+ *
+ ----------------------------------------------------------------------------------*/
+void Timer1_init(const Timer1_ConfigType * Config_Ptr){
+		TCCR1A=(1<<FOC1A);
+
+		TCCR1B =((Config_Ptr -> mode)<<WGM12)| ((Config_Ptr -> prescaler)<<CS10);
+		TCNT1 = Config_Ptr -> initial_value;
+		OCR1A = Config_Ptr -> compare_value;
+		SREG|=(1<<7);
+
+		TIMSK |= (1<<OCIE1A);
+}
+
+/*-------------------------------------------------------------------------------
+ * [Function Name]: Timer1_DeInit
+ *
+ * [Description]:  Function to disable the Timer
+ *
+ * [Args]:       void
+ *
+ * [Returns]:      Void
+ *
+ ----------------------------------------------------------------------------------*/
+void Timer1_deInit(void){
+	/* Clear All Timer1 Registers */
+	TCCR1A = 0;
+	TCCR1B = 0;
+	TCNT1 = 0;
+	ICR1 = 0;
+}
+
+/*-------------------------------------------------------------------------------
+ * [Function Name]: Timer1_setCallBack
+ *
+ * [Description]:  Function to set the Call Back function address.
+ *
+ * [Args]:        a_ptr: a void pointer to a void function that takes the address of the call back function
+ *
+ * [Returns]:      Void
+ *
+ ----------------------------------------------------------------------------------*/
+void Timer1_setCallBack(void(*a_ptr)(void)){
+	/* Save the address of the Call back function in a global variable */
+	g_callBackPtr = a_ptr;
+}
+
+
+/*
+ * Timer/Counter1 Compare Match A
+ *
+ */
+ISR(TIMER1_COMPA_vect){
+	if(g_callBackPtr != NULL_PTR)
+	{
+		/* Call the Call Back function in the application after the edge is detected */
+		(*g_callBackPtr)(); /* another method to call the function using pointer to function g_callBackPtr(); */
+	}
+}
+
+/*
+ * Timer/Counter1 Overflow
+ *
+ */
+ISR(TIMER1_OVF_vect)
+{
+	if(g_callBackPtr != NULL_PTR)
+		{
+			/* Call the Call Back function in the application after the edge is detected */
+			(*g_callBackPtr)(); /* another method to call the function using pointer to function g_callBackPtr(); */
+		}
+}
+

@@ -1,0 +1,45 @@
+15:10:25 **** Incremental Build of configuration Debug for project FinalProject_MC1 ****
+make all 
+Building file: ../HMI_ECU.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"HMI_ECU.d" -MT"HMI_ECU.o" -c -o "HMI_ECU.o" "../HMI_ECU.c"
+In file included from ../HMI_func.h:18,
+                 from ../HMI_ECU.c:14:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../HMI_ECU.c
+ 
+Building file: ../HMI_func.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"HMI_func.d" -MT"HMI_func.o" -c -o "HMI_func.o" "../HMI_func.c"
+In file included from ../HMI_func.h:18,
+                 from ../HMI_func.c:13:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../HMI_func.c
+ 
+Building target: FinalProject_MC1.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,FinalProject_MC1.map -mmcu=atmega32 -o "FinalProject_MC1.elf"  ./HMI_ECU.o ./HMI_func.o ./gpio.o ./keypad.o ./lcd.o ./timer1.o ./uart.o   
+Finished building target: FinalProject_MC1.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S FinalProject_MC1.elf  >"FinalProject_MC1.lss"
+Finished building: FinalProject_MC1.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 FinalProject_MC1.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   16036 bytes (48.9% Full)
+(.text + .data + .bootloader)
+
+Data:        237 bytes (11.6% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+
+15:10:26 Build Finished. 0 errors, 2 warnings. (took 933ms)
+

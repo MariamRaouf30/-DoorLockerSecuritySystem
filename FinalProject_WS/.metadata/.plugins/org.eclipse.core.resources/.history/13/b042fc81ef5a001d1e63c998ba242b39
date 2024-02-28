@@ -1,0 +1,37 @@
+/*
+ * HMI_func.h
+ *
+ *  Created on: Nov 2, 2022
+ *      Author: dell
+ */
+
+#ifndef HMI_FUNC_H_
+#define HMI_FUNC_H_
+
+#include "lcd.h"
+#include "keypad.h"
+#include <util/delay.h>
+#include "uart.h"
+#include <avr/io.h>
+#include "timer1.h"
+
+#define AGAIN 		0x10
+#define MATCHED 	0x01
+#define UNMATCHED   0x03
+#define ALERT 		0x02
+#define OPEN 		0x04
+#define SEND_PASS	0x05
+#define CHECK		0x06
+#define GSEND_PASS  0x07
+#define READY 		0X08
+
+enum states{
+	start, confirmation, error, choose , open_door, alert
+}state;
+
+
+void take_pass(uint8 pass[]);
+void send_password(uint8 pass[]);
+void timer_setCallBack();
+
+#endif /* HMI_FUNC_H_ */

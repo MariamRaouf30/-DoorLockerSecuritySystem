@@ -1,0 +1,39 @@
+/*
+ * CONTROL_ECU.C
+ *
+ *  Created on: Oct 30, 2022
+ *      Author: dell
+ */
+
+#include "CONTROL_func.h"
+
+uint8 pass[5];
+
+int main(void){
+	controlECU_init();
+	uint8 receive_byte ;
+	while(1){
+		receive_byte = UART_recieveByte();
+		if (receive_byte == SEND_PASS){
+			receive_password(password);
+			while(UART_recieveByte() != AGAIN);
+			receive_password(confirmed_password);
+			compare_passwords(password,confirmed_password);
+			if(flag == 0){
+				save_password(password);
+			}
+
+		}
+		if (receive_byte == GSEND_PASS){
+			receive_password(pass);
+			get_password();
+			UART_sendByte(CHECK);
+			//compare_passwords(eeprom_password,pass);
+			compare_passwords(eeprom_password,pass);
+		}
+		if (receive_byte == OPEN){
+			open_door();
+			UART_sendByte(READY);
+		}
+	}
+}

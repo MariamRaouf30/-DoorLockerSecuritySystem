@@ -1,0 +1,107 @@
+/*
+ * HMI_ECU.c
+ *
+ *  Created on: Oct 29, 2022
+ *      Author: dell
+ */
+
+#include "HMI_func.h"
+
+uint8 count_error = 0;
+
+uint8 g_password[5];
+uint8 received_byte=0;
+
+
+int main(void){
+	HMI_init();
+	state = 0;
+	while(1){
+		switch(state){
+		case user_password:
+			userPASSWORD();
+			state++;
+			break;
+		case confirmation :
+			UART_sendByte(CHECK);
+			received_byte = UART_recieveByte();
+			if (received_byte == MATCHED ){
+				LCD_clearScreen();
+				LCD_displayString("MATCHED");
+
+				//state = Main_menu;
+
+				if(UART_recieveByte() == READY){
+					LCD_clearScreen();
+					LCD_displayString("SAVED");
+				}
+			}
+			else if (received_byte == UNMATCHED ){
+				state = Error;
+				count_error++;
+			}
+			break;
+		case Main_menu:
+			LCD_clearScreen();
+			LCD_displayString("+: open door");
+			LCD_moveCursor(1,0);
+			LCD_displayString("-: change pass");
+			uint8 key = KEYPAD_getPressedKey();
+			_delay_ms(500);
+			if (key == '+'){
+			LCD_clearScreen();
+			LCD_displayString("enter saved pass:");
+			_delay_ms(50);
+			LCD_moveCursor(1,0);
+			take_pass(g_password);
+			UART_sendByte(GSEND_PASS);
+			while(UART_recieveByte()!= READY);
+			send_password(g_password);
+			received_byte = UART_recieveByte();
+			if (received_byte == MATCHED ){
+				LCD_clearScreen();
+				state = open_door;
+			}
+			else if (received_byte == UNMATCHED ){
+				state = Error;
+				count_error++;
+			}
+			state = open_door;
+			}
+			else if (key == '-'){
+			state = user_password;
+			}
+			break;
+		case Error:
+			if (count_error == 3){
+				count_error = 0;
+				UART_sendByte(ALERT);
+			}
+			else {
+				LCD_clearScreen();
+				LCD_displayString("PASSWORD UNMATCHED");
+				_delay_ms(500);
+				state = user_password;
+			}
+			break;
+		case open_door:
+			LCD_clearScreen();
+			UART_sendByte(OPEN);
+
+//			if (received_byte == CHECK ){
+//				LCD_displayString("DOOR OPENING");
+//			}
+			LCD_displayString("DOOR OPENING");
+			while(UART_recieveByte() != READY);
+			state = Main_menu;
+			break;
+		case Alert:
+			break;
+		}
+
+	}
+}
+
+
+
+

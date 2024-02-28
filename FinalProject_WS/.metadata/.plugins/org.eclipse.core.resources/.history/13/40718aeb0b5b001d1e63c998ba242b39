@@ -1,0 +1,122 @@
+/*
+ * CONTROL_func.c
+ *
+ *  Created on: Nov 2, 2022
+ *      Author: dell
+ */
+
+#include "CONTROL_func.h"
+
+uint8 flag;
+uint8 g_ticks ;
+uint8 g_password[5];
+uint8 password[5];
+uint8 confirmed_password[5];
+uint8 confirm_pass;
+uint8 eeprom_password[5];
+
+
+
+void controlECU_init(){
+	SREG |=(1<<7);
+	UART_ConfigType Config_UART = {EIGHT_bIT, DISABLED, BIT_1,RATE_9600};
+	UART_init(&Config_UART);
+	DcMotor_Init();
+	TWI_ConfigType Config_TWI ={ 0b00000010 , 0x02};
+	TWI_init(&Config_TWI);
+}
+
+
+void receive_password(uint8 pass[5]){
+	for (int i = 0; i < 5; i++){
+		pass[i] = UART_recieveByte();
+	}
+}
+
+//void USER_PASSWORD(){
+//	receive_password(password);
+//	while(UART_recieveByte() != AGAIN);
+//	receive_password(confirmed_password);
+//	compare_passwords(password,confirmed_password);
+//}
+//
+
+void compare_passwords(uint8 pass1[],uint8 pass2[]){
+	flag = 0;
+	for(int i = 0; i<5; i++){
+		if(pass1[i] != pass2[i]){
+			flag = 1;
+			break;
+		}
+	}
+	while(UART_recieveByte() != CHECK);
+	if(flag == 0 ){
+		UART_sendByte(MATCHED);
+	}
+	if(flag == 1 ){
+		UART_sendByte(UNMATCHED);
+	}
+}
+
+
+
+
+
+void save_password(uint8 pass[]){
+	for(int i = 0 ; i<5; i++){
+		EEPROM_writeByte( EEPROM_ADDREESS+i, g_password[i]);
+		_delay_ms(10);
+	}
+}
+
+void get_password(void){
+	/*
+	 * looping on every number in (array parameter)password and store this number in specific
+	 * 		address in memory
+	 */
+	for(int i=0;i<5;i++){
+		EEPROM_readByte(EEPROM_ADDREESS+i, &eeprom_password[i]);
+		_delay_ms(10);
+	}
+
+}
+
+
+void open_door(){
+	    Timer1_ConfigType Config_timer ={0, 8000, F_CPU_1024,CTC_MODE};
+		Timer1_init(&Config_timer);
+		Timer1_setCallBack(timer_setCallBack);
+		/*
+		 * make g_ticks zero to start calculation and comparison of time
+		 */
+		g_ticks = 0;
+		DcMotor_Rotate(CW,100);
+		/*
+		 * wait until door next state
+		 */
+		while (g_ticks < 15);
+
+		g_ticks = 0;
+		DcMotor_Rotate(STOP,0);
+		/*
+		 * wait until door next state
+		 */
+		while (g_ticks < 3);
+		g_ticks = 0;
+		DcMotor_Rotate(A_CW,100);
+		/*
+		 * wait until door next state
+		 */
+		while (g_ticks < 15);
+		DcMotor_Rotate(STOP,0);
+		Timer1_deInit();
+
+}
+
+
+void timer_setCallBack(){
+	g_ticks++;
+}
+
+
+

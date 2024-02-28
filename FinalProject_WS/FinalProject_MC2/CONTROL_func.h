@@ -1,0 +1,109 @@
+/******************************************************************************
+ *
+ * Module: Control ECU functions
+ *
+ * File Name: CONTROL_func.h
+ *
+ * Description: Header file Functions Executed in Control ECU main function
+ *
+ * Author: Mariam Raouf
+ *
+ *******************************************************************************/
+
+#ifndef CONTROL_FUNC_H_
+#define CONTROL_FUNC_H_
+
+#include <util/delay.h>
+#include "uart.h"
+#include <avr/io.h>
+#include "timer1.h"
+#include "external_eeprom.h"
+#include "dc_motor.h"
+#include "twi.h"
+#include "buzzer.h"
+
+/*******************************************************************************
+ *                                Definitions                                  *
+ *******************************************************************************/
+
+/* Common messages between Control MCU & Human MCU */
+#define AGAIN 		0x10
+#define MATCHED 	0x01
+#define UNMATCHED   0x03
+#define ALERT 		0x02
+#define OPEN 		0x04
+#define SEND_PASS	0x05
+#define CHECK		0x06
+#define GSEND_PASS  0x07
+#define READY 		0X08
+#define ERROR1_CHECK 0x09
+#define ERROR2_CHECK 0x020
+
+#define EEPROM_ADDREESS		   	    0x00
+
+/*******************************************************************************
+ *                              Global Variables                                *
+ *******************************************************************************/
+extern uint8 flag;
+extern uint8 g_ticks ;
+extern uint8 g_password[5];
+extern uint8 password[5];
+extern uint8 confirmed_password[5];
+extern uint8 confirm_pass;
+extern uint8 eeprom_password[5];
+
+/*******************************************************************************
+ *                      Functions Prototypes                                   *
+ *******************************************************************************/
+
+/*
+ * Description:
+ * Function used to initialize CONTROL UNIT in the start of the program
+ */
+void controlECU_init(void);
+
+/*
+ * Description:
+ * Function used to receive password of 5 digits from Human MCU
+ */
+void receive_password(uint8 pass[]);
+
+/*
+ * Description:
+ * Function used to compare between 2 passwords and raise flag if not equal
+ */
+void compare_passwords(uint8 pass1[],uint8 pass2[]);
+
+/*
+ * Description:
+ * Function used to save password in eeprom
+ */
+void save_password(uint8 pass[]);
+
+/*
+ * Description:
+ * Function used to read password from eeprom in a global variable
+ */
+void get_password(void);
+
+/*
+ * Description:
+ * Function used to turn on motor/open door for 15 seconds wait for 3 seconds then re-locking the door
+ * turn on motor Anti-Clockwise for another 15 seconds
+ */
+void open_door(void);
+
+
+/*
+ * Description:
+ * Function used to turn on alert by turning on buzzer for 60 seconds
+ */
+void Alert(void);
+
+/*
+ * Description:
+ * Call Back Function for timer1 increments g_ticks every second
+ */
+void timer_setCallBack(void);
+
+#endif /* CONTROL_FUNC_H_ */
